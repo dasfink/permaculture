@@ -1,3 +1,8 @@
+/*
+  Copyright 2017 Michael Finkler (info@dasfink.com) 
+  Licensed under CC BY-NC-SA 1.0
+*/
+
 // utils.js
 // ========
 var constants = require('./constants.js')
