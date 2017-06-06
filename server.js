@@ -1,3 +1,9 @@
+/*
+  Copyright 2017 Michael Finkler (info@dasfink.com)
+  Licensed under CC BY-NC-SA 1.0
+*/
+
+
 // server.js
 'use strict';
 
@@ -36,7 +42,7 @@ app.use(bodyParser.json({type: 'application/json'}));
 var getPlantFactResponse = function(speciesInfo) {
 	var response = '';
 	if(speciesInfo.Commonname) 
-		response = speciesInfo.Commonname + ' is also known as ';
+		response = speciesInfo.Commonname + ' which is also known as ';
 	
 	response += speciesInfo.Latinname + '.'; 
 	response += utils.getRandomFact(speciesInfo);

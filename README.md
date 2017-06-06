@@ -1,27 +1,23 @@
-Welcome to the Glitch BETA
+Permaculture-brain
 =========================
-
-Click `Show` in the header to see your app live. Updates to your code will instantly deploy and update live.
-
-**Glitch** is the friendly commmunity where you'll build the app of your dreams. Glitch lets you instantly create, remix, edit, and host an app, bot or site, and you can invite collaborators or helpers to simultaneously edit code with you.
-
-Find out more [about Glitch](https://glitch.com/about).
+Provides a webhook endpoint that accepts [API.AI](https://api.ai) queries about plants and provides facts.
 
 
-Your Project
+Getting started
+===============
+Fork and import this repository on Glitch.  To obtain a copy of the database go to the [PFAF shop](http://www.pfaf.org/user/shop.aspx) and make a donation.
+
+
+Attributions
+========================
+Powered by the plant database from [Plant for a Future](http://www.pfaf.org/user/Default.aspx).  
+
+Made using Glitch [Fog Creek](https://fogcreek.com/)
+
+See package.json for additional dependencies.
+
+
+License
 ------------
+Licensed under [CC BY-NC-SA 1.0](https://creativecommons.org/licenses/by-nc-sa/1.0/){blank}
 
-On the front-end,
-- edit `public/client.js`, `public/style.css` and `views/index.html`
-- drag in `assets`, like images or music, to add them to your project
-
-On the back-end,
-- your app starts at `server.js`
-- add frameworks and packages in `package.json`
-- safely store app secrets in `.env` (nobody can see this but you and people you invite)
-
-
-Made by [Fog Creek](https://fogcreek.com/)
--------------------
-
-\ ゜o゜)ノ
