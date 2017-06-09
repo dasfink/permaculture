@@ -5,8 +5,8 @@
 
 // utils.js
 // ========
-var constants = require('./constants.js')
 
+var constants = require('./constants.js');
 var db = require('sqlite');
 db.open('.data/plants.db', { cached: true, verbose: true, Promise });
 
@@ -29,7 +29,7 @@ module.exports = {
   },
   
   runAllQuery: function(query, params) {
-
+    console.log(params);
     return new Promise((resolve, reject) => {
 		  db.all(query, params).then(function(rows) { resolve(rows); });
 	  });
@@ -76,7 +76,7 @@ module.exports = {
   },
   
   getRandomPlant: function() {
-    var allPlantsQuery = 'SELECT * FROM `Species List` WHERE Usesnotes <> "None known"';
+    var allPlantsQuery = 'SELECT * FROM `Species List` WHERE Usesnotes <> ?';
     
     var randomNumber = Math.random();
     
@@ -89,7 +89,7 @@ module.exports = {
     
     
     return new Promise((resolve, reject) => {
-      this.runAllQuery(allPlantsQuery, {})
+      this.runAllQuery(allPlantsQuery, [constants.UNKNOWN_FACT])
       .then(function(plants) {
         console.log(plants.length);
         if(plants.length == 0)
@@ -106,7 +106,7 @@ module.exports = {
   tokenizeFacts: function(factString) {
 	  var facts = [];
 	  //console.log('in tokenizeFacts');
-	  if(factString == constants.UNKNOWN)
+	  if(factString == constants.UNKNOWN_FACT)
 		  return facts;
 
 	  var regex = /\[[\d,\s]+\]/

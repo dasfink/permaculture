@@ -1,5 +1,6 @@
 /*
   Copyright 2017 Michael Finkler (info@dasfink.com)
+  
   Licensed under CC BY-NC-SA 1.0
 */
 
@@ -9,21 +10,6 @@
 
 process.env.DEBUG = 'actions-on-google:*';
 
-//Action names
-const PLANT_SELECTION = 'Plant.selection';
-const PLANT_FACTS = 'Plant.facts';
-const PLANT_EDIBLE = 'Plant.edible';
-const PLANT_MEDICINAL = 'Plant.medicinal';
-const PLANT_RANDOM = 'Plant.random';
-
-//Variable names
-const PLANTNAMES_VARIABLE = 'Plantnames';
-const SELECTION_CRITERIA = 'Selection-criteria';
-const PLANT_FACT_TYPES = 'Plant-fact-types';
-
-//Context names
-const PLANT_SELECTION_CONTEXT = 'plant-selected';
-const PLANTFACTS_FOLLOWUP = 'Plantfacts-followup';
 
 // init project
 var express = require('express');
@@ -33,8 +19,8 @@ var Promise = require('bluebird');
 var ApiAiApp = require('actions-on-google').ApiAiApp;
 
 
-var constants = require('./constants.js')
 var utils = require('./utils.js');
+var constants = require('./constants.js');
 
 app.use(bodyParser.json({type: 'application/json'}));
 
@@ -50,13 +36,58 @@ var getPlantFactResponse = function(speciesInfo) {
 	return response;
 };
 
+///Returns the response when selecting a plant.
+var getInitialPlantResponse = function(info) {
+  var plantFact = {};
+  var factType = 'Usesnotes';
+        
+  var plantName = utils.getPlantName(info);
+  var plantFact = getPlantFact(info, factType, 'is a plant?', 0);
+  var fact = 'Some uses are as ' + plantFact.result;
+  var hasFact = plantFact.hasFact;
+      
+  if(!hasFact) {
+    factType = "Edibleuses";
+    plantFact = getPlantFact(info, factType, '', 0);
+    hasFact = plantFact.hasFact;
+    fact = 'It\'s  edible! ' + plantFact.result;
+  }
+  if(!hasFact) {
+    factType = "Medicinal";
+    plantFact = getPlantFact(info, factType, '', 0);
+    hasFact = plantFact.hasFact;
+    fact = 'It\'s  medicinal! ' + plantFact.result;
+  }
+  if(!hasFact) {
+    factType = "Habitat";
+    plantFact = getPlantFact(info, factType, '', 0);
+    hasFact = plantFact.hasFact;
+    fact = 'Is found in habitat! ' + plantFact.result;
+  }
+  if(!hasFact && plantName != info.Latinname) { 
+    hasFact = true;
+    fact = ' is known as ' + info.Latinname;
+  }
+
+  console.log('fact ' + fact);
+  
+  //fact =  fact + '. Do you want to know more?';
+  //getPlantFactResponse(info);
+  
+  var prompts =     
+  ['You can ask about a plant, if a plant is edible, if it has medical properties and also about conditions that a plant prefers.',
+    'You can ask for a random fact, ask me to find a new plant or talk to me about your garden.',
+    'We can stop here, see you next time!'];
+  
+  return { result: fact, prompts: prompts, hasFact: hasFact, plantName: plantName, plantFact: plantFact};
+        
+};
 
 var getPlantFact = function(plantObj, fieldName, fallbackString, index) {
   index = (index) ? index : 0;
   var lastIndex = index;
   var factString = plantObj[fieldName];
   
-  console.log(fieldName);
   var facts = utils.tokenizeFacts(factString);
   if(facts.length == 0 || facts[0] == 'None known')
     return {"factString": fallbackString, 
@@ -66,15 +97,29 @@ var getPlantFact = function(plantObj, fieldName, fallbackString, index) {
   
   var factString = facts[index];
   
-  if(factString.length <= 140 && facts[index+1]) 
+  if(factString.length <= 80 && facts[index+1]) 
   {
     factString += facts[index+1];
     lastIndex++;
   }
+
+  if(facts.lenght > lastIndex) {
+    factString += '.  Do you want to know more?';
+  } else {
+    factString += '.  Do you want to know another fact?';
+  }
   
-  return {"factString": factString, 
-            "lastIndex": 0, 
-            "hasFact": true};
+  return {"result": factString, 
+          "lastIndex": 0, 
+          "hasFact": true};
+};
+
+var getResponses = function(providedResponse, user) { 
+  var response = providedResponse || 'What other plant do you want to know about?';
+  var prompts =     ['You can ask about a plant, if a plant is edible, if it has medical properties and also about conditions that a plant prefers.',
+    'You can ask for a random fact, ask me to find a new plant or talk to me about your garden.',
+    'We can stop here, see you next time!'];
+  return { response: response, prompts: prompts };
 };
 
 var getUnknownPlantFallback = function(name) {
@@ -90,36 +135,18 @@ app.post('/permaculture-brain', function(request, response) {
   ///Gets a plant based on the provided name and returns the common name and
   ///a random fact.
   function plantSelection(apiai) {
-    var plantName = apiai.getArgument(PLANTNAMES_VARIABLE);
+    var plantName = apiai.getArgument(constants.PLANTNAMES_VARIABLE);
     console.log('Plant name ' + plantName);
     utils.getSpeciesInfo(plantName)
       .then(function(info) {
 
-        var plantFact = {};
-        var factType = 'Usesnotes';
-        
-        var returnName = utils.getPlantName(info);
-        var plantFact = getPlantFact(info, factType, 'is a plant?', 0);
-        var fact = plantFact.factString;
-        var hasFact = plantFact.hasFact;
-      
-        if(!hasFact) {
-          factType = "Edibleuses";
-          plantFact = getPlantFact(info, factType, '', 0);
-          hasFact = plantFact.hasFact;
-          fact = 'is edible? ' + plantFact.factString;
+        var response = getInitialPlantResponse(info);
+        if(response.hasFact) {
+          var result =  response.plantName + '. ' + response.result; 
+          apiai.ask(result, response.prompts);
+        } else {
+          apiai.ask(getUnknownPlantFallback(plantName));
         }
-        if(!hasFact && returnName != plantName.Latinname) { 
-          hasFact = true;
-          fact = ' is known as ' + plantName.Latinname;
-        }
-
-        if(!hasFact && fact) {
-          apiai.ask(getUnknownPlantFallback(name));
-        }
-        var result = 'Did you know that ' + utils.getPlantName(info) + ' ' + fact;
-        //getPlantFactResponse(info);
-        apiai.ask(result);
       })
       .catch(function(err) {
         console.log(err);
@@ -128,74 +155,58 @@ app.post('/permaculture-brain', function(request, response) {
 
   };
   
-  ///Returns a response related to the plants edibility 
-  function isPlantEdible(apiai) {
-    var plantName = apiai.getArgument(PLANTNAMES_VARIABLE);
-    utils.getSpeciesInfo(plantName)
-      .then(function(info) {
-        var result = getPlantFact(info, 'Edibleuses', 'Not edible');
-        apiai.ask(result);
-      })
-      .catch(function(err) {
-        
-        apiai.ask(getUnknownPlantFallback(name));
-      });
-  };
-  
-    ///Returns a response related to the plants edibility 
-  function isPlantMedicinal(apiai) {
-    var plantName = apiai.getArgument(PLANTNAMES_VARIABLE);
-    
-    utils.getSpeciesInfo(plantName)
-      .then(function(info) {
-        var result = getPlantFact(info, 'Medicinal', 'Not medicinal' );
-        apiai.ask(result);
-      })
-      .catch(function(err) {
-        apiai.ask(getUnknownPlantFallback(name));
-      });
-  };
   
   ///Returns a random plant from the database.
   function plantRandom(apiai) {
-    var plantName = apiai.getArgument(PLANTNAMES_VARIABLE);
-    var selectionCritieria = apiai.getArgument(SELECTION_CRITERIA);
-    
-    console.log(selectionCritieria);
+    var plantName = apiai.getArgument(constants.PLANTNAMES_VARIABLE);
     
     var info = utils.getRandomPlant()
       .then(function(info) {
-        var result = 'Your plant is ' + getPlantFactResponse(info);
-        
-        var params = {};
-        params[PLANTNAMES_VARIABLE] = info.Latinname;
-        apiai.setContext(PLANT_SELECTION_CONTEXT, 5, params);
-        apiai.ask(result);
+        var response = getInitialPlantResponse(info);
+        if(response.hasFact) {
+          var params = {};
+          params[constants.PLANTNAMES_VARIABLE] = info.Latinname;
+          apiai.setContext(constants.PLANT_SELECTION_CONTEXT, constants.PLANT_SELECTION_CONTEXT_TTL, params);
+          
+          var result = 'I was able to dig up ' + response.plantName + '. ' + response.result; 
+          
+          apiai.ask(result, response.prompts);
+        } else {
+          apiai.ask(getUnknownPlantFallback(plantName));
+        }
+
       }).catch(function(err) {
         console.log(err);
-        apiai.ask('Dear me, something must have gone wrong. I wasn\'t able to find a plant.')
+        var response = 'I wasn\'t able to find a plant.  Something must be wrong, try back later';
+        apiai.tell(response);
       });
   };
   
+  //Returns a fact for a plant
   function getPlantFacts(apiai) {
-    var plantName = apiai.getArgument(PLANTNAMES_VARIABLE);
-    var plantFactsType = apiai.getArgument(PLANT_FACT_TYPES);
+    var plantName = apiai.getArgument(constants.PLANTNAMES_VARIABLE);
+    var plantFactsType = apiai.getArgument(constants.PLANT_FACT_TYPES);
     console.log('Fact type ' + plantFactsType);
     console.log('PlantName ' + plantName);
     
     
     utils.getSpeciesInfo(plantName)
       .then(function(info) {
-        var result = getPlantFact(info, plantFactsType, 'I do not have any info about that.');
+        var result = getPlantFact(info, 
+                                  plantFactsType, 
+                                  'Not that I know of, what else can I tell you?' );
+        var responses = getResponses(result.factString, null);
+      
         var lastIndex = result.lastIndex;
-        console.log(lastIndex);
+
         var params = {
           "lastFactType": plantFactsType,
           "lastFactIndex": lastIndex 
         };
         
-        apiai.setContext(PLANTFACTS_FOLLOWUP, 2, params);
-        apiai.ask(result.factString);
+        
+        apiai.setContext(constants.PLANTFACTS_FOLLOWUP, 2, params);
+        apiai.ask(responses.result,responses.prompts);
       })
       .catch(function(err) {
         apiai.ask(getUnknownPlantFallback(name));
@@ -203,8 +214,8 @@ app.post('/permaculture-brain', function(request, response) {
   };
   
   function repeatLastFact(apiai) {
-    var plantName = apiai.getArgument(PLANTNAMES_VARIABLE);
-    var plantFactsType = apiai.getArgument(PLANT_FACT_TYPES);
+    var plantName = apiai.getArgument(constants.PLANTNAMES_VARIABLE);
+    var plantFactsType = apiai.getArgument(constants.PLANT_FACT_TYPES);
     var lastPlantFactType = apiai.getArgument("lastFactType") || plantFactsType;
     var lastIndex = apiai.getArgument("lastIndex") || 0;
     
@@ -216,13 +227,12 @@ app.post('/permaculture-brain', function(request, response) {
                                   lastIndex);
       
         var lastIndex = result.lastIndex;
-        console.log(lastIndex);
         var params = {
           "lastFactType": plantFactsType,
           "lastFactIndex": lastIndex 
         };
         
-        apiai.setContext(PLANTFACTS_FOLLOWUP, 2, params);
+        apiai.setContext(constants.PLANTFACTS_FOLLOWUP, 2, params);
         apiai.ask(result.factString);
       })
       .catch(function(err) {
@@ -230,14 +240,14 @@ app.post('/permaculture-brain', function(request, response) {
       });
     
   };
+  console.log(constants);
+  console.log('const: ' + constants.PLANT_SELECTION)
   
   let actionMap = new Map();
-  actionMap.set(PLANT_SELECTION, plantSelection);
-  actionMap.set(PLANT_RANDOM, plantRandom);
-  actionMap.set(PLANT_EDIBLE, isPlantEdible);
-  actionMap.set(PLANT_MEDICINAL, isPlantMedicinal);
-  actionMap.set(PLANT_FACTS, getPlantFacts);
-  actionMap.set('Plantfacts.Plantfacts-repeat', repeatLastFact);
+  actionMap.set(constants.PLANT_SELECTION, plantSelection);
+  actionMap.set(constants.PLANT_RANDOM, plantRandom);
+  actionMap.set(constants.PLANT_FACTS, getPlantFacts);
+  actionMap.set(constants.PLANT_FACTS_REPEAT, repeatLastFact);
   apiai.handleRequest(actionMap);
 
 });
