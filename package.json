@@ -1,31 +1,18 @@
 {
-  "//1": "describes your app and its dependencies",
-  "//2": "https://docs.npmjs.com/files/package.json",
-  "//3": "updating this file will download and update your packages",
-  "name": "permaculture",
+  "name": "garden-guide",
   "version": "1.0.0",
-  "description": "Planting for tommorow",
-  "main": "server.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "actions-on-google": "^1.1.1",
-    "bluebird": "^3.5.0",
-    "body-parser": "^1.17.2",
-    "express": "^4.15.2",
-    "sqlite": "^2.8.0"
-  },
-  "engines": {
-    "node": "6.10.x"
-  },
-  "repository": {
-    "url": "https://glitch.com/edit/#!/welcome-project"
-  },
-  "license": "CC BY-NC-SA 1.0",
-  "keywords": [
-    "node",
-    "glitch",
-    "express"
-  ]
+    "@types/node": "^7.0.29",
+    "reflect-metadata": "^0.1.10",
+    "sqlite3": "^3.1.8",
+    "typeorm": "0.1.0-alpha.8"
+  }
 }
