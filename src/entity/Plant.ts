@@ -1,6 +1,6 @@
 import {Entity, Column, PrimaryColumn} from "typeorm";
 
-@Entity()
+@Entity("Species List")
 export class Plant {
 	@PrimaryColumn()
 	Latinname: String
@@ -20,8 +20,8 @@ export class Plant {
 	@Column("text")
 	Habit: String
 
-	@Column()
-	'Deciduous/Evergreen': String
+	@Column({name: "Deciduous/Evergreen"})
+	LeafType: String
 
 	@Column()
 	Height: Number
@@ -32,8 +32,8 @@ export class Plant {
 	@Column()
 	Hardyness: Number
 
-	@Column()
-	'Incultivation?': Boolean
+  @Column({ name:"Incultivation?"})
+	Incultivation: Boolean
 
 	@Column("text")
 	Medicinal: String
@@ -53,8 +53,8 @@ export class Plant {
 	@Column()
 	Moisture: String
 
-	@Column()
-	'Well-drained': Boolean
+  @Column({ name: "Well-drained" })
+	WellDrained: Boolean
 
 	@Column()
 	Nitrogenfixer: Boolean
@@ -113,8 +113,8 @@ export class Plant {
 	@Column()
 	Pollinators: String
 
-	@Column()
-	'Self-fertile': String
+  @Column({ name: "Self-fertile" })
+	SelfFertile: String
 
 	@Column("text")
 	Knownhazards: String
@@ -143,8 +143,8 @@ export class Plant {
 	@Column()
 	Heavyclay: Boolean
 
-	@Column()
-	'Pull-out': Boolean
+  @Column({ name: "Pull-out" })
+	PullOut: Boolean
 
 	@Column()
 	Lastupdate: Date

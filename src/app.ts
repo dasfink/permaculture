@@ -5,7 +5,7 @@ import { Plant } from "./entity/Plant";
 const connectionOptions : ConnectionOptions = {
   name: "sqlite",
   type: "sqlite",
-  database: "./plants.db",
+  database: "../plants.db",
   entities: [
     __dirname + "/entity/*.js"
   ],
@@ -15,6 +15,6 @@ const connectionOptions : ConnectionOptions = {
 createConnection(connectionOptions).then(async connection => {
   let plantRepository = connection.getRepository(Plant);
   let savedPlants = await plantRepository.find();
-  console.log("All plants from the db: ", savedPlants);
+console.log(`All ${savedPlants.length} plants in the db`);
     
 }).catch(error => console.log(error));
