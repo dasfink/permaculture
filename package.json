@@ -4,15 +4,36 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node lib/index.js",
+    "monitor": "nodemon lib/index.js",
+    "test": "mocha --reporter spec --compilers ts:ts-node/register  'test/**/*.spec.ts'"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^7.0.29",
+    "actions-on-google": "^1.1.1",
+    "body-parser": "^1.17.2",
+    "debug": "^2.6.8",
+    "express": "^4.15.3",
+    "morgan": "^1.8.2",
     "reflect-metadata": "^0.1.10",
     "sqlite3": "^3.1.8",
     "typeorm": "0.1.0-alpha.8"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.0",
+    "@types/chai-http": "0.0.30",
+    "@types/debug": "0.0.29",
+    "@types/mocha": "^2.2.41",
+    "@types/morgan": "^1.7.32",
+    "@types/node": "^7.0.29",
+    "@types/sinon": "^2.3.1",
+    "chai": "^4.0.2",
+    "chai-http": "^3.0.0",
+    "mocha": "^3.4.2",
+    "sinon": "^2.3.4",
+    "ts-node": "^3.0.6",
+    "typescript": "^2.3.4"
   }
 }

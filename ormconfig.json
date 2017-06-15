@@ -1,0 +1,20 @@
+[
+  {
+  "name": "default",
+    "type": "sqlite",
+    "database": "./plants.db",
+    "entities": [
+      "./lib/entity/*.js"
+    ],
+    "autoSchemaSync": false
+  },
+  {
+  "name": "dev",
+    "type": "sqlite",
+    "database": "/Users/mfinkler/Dev/permaculture/plants.db",
+    "entities": [
+      "/Users/mfinkler/Dev/permaculture/lib/entity/*.js"
+    ],
+    "autoSchemaSync": false
+  }
+]

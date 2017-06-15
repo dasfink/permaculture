@@ -2,7 +2,7 @@ import {Entity, Column, PrimaryColumn} from "typeorm";
 
 @Entity("Species List")
 export class Plant {
-	@PrimaryColumn()
+  @PrimaryColumn()
 	Latinname: String
 
 	@Column()
